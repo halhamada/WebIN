@@ -1,0 +1,757 @@
+
+<!DOCTYPE html>
+<html>
+<head lang="en">
+<meta charset="UTF-8">
+<title>Social Web</title>
+<script
+	src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<style type="text/css">
+#myform {
+	float: left
+}
+
+#map_canvas {
+	width: 600px;
+	height: 300px;
+	margin-bottom: 0;
+	margin-left: 200px float:left
+}
+
+#output {}
+</style>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true"></script>
+<script type="text/javascript">
+	        var map;
+	        var marker;
+            var clearMap;
+            var markers = [];
+            <!--initialize the map-->
+            function initialize() {
+	            var sheffield = new google.maps.LatLng(53.38108855193859,-1.4801287651062012);
+	            var mapOptions = {
+	                zoom: 12,
+	                center: sheffield,
+	                mapTypeId: google.maps.MapTypeId.TERRAIN
+	            };
+	            map = new google.maps.Map(document.getElementById('map_canvas'),
+	                    mapOptions);
+	            // This event listener will call placeMarker() when the map is clicked.
+	            google.maps.event.addListener(map, 'click', function(event) {
+	                placeMarker(event.latLng);
+	            });
+	        }
+
+            /**
+             *  this function will add marker to the map
+             * @param location {google.maps.LatLng}
+             *
+             */
+	        function placeMarker(location) {
+                // if there is a previous marker delete it
+	            if(document.getElementById("twitLoc").value!="")
+	            {
+	                marker.setMap(null);
+	            }
+
+	            marker = new google.maps.Marker({
+	                position: location,
+	                map: map,
+	                title:location.toLocaleString()
+	
+	            });
+	            // create an infoWindow for the marker that have the location lat and long
+	            var infowindow =new google.maps.InfoWindow({
+	                content:location.toLocaleString(),
+	                maxWidth:200});
+	
+                // add a listener to the marker to open the infoWindow by clicking on the marker
+	            google.maps.event.addListener(marker,'click',function(){
+	                infowindow.open(map,marker);
+	            });
+
+
+                    // add the lat and the long to the fields
+                    document.getElementById("twitLoc").value =location.lat()+","+location.lng();
+                    document.getElementById("lat1").value =location.lat();
+                    document.getElementById("long1").value =location.lng();
+
+	        }
+
+            /**
+             *  this function will add marker to the map with the data from Foursquare or bdpedia
+             * @param location {google.maps.LatLng}
+             * @param venueName {string} the venue name
+             */
+            function placeMarkerFoursquareAndBdPedia(location,url,venueName) {
+                // this will remove all the previous markers from the previous request
+                if(clearMap==true)
+                {
+                    clearMap=false;
+                    setAllMap(null);
+                }
+                var marker2 = new google.maps.Marker({
+                    position: location,
+                    map: map,
+                    title:venueName
+                });
+                markers.push(marker2);
+                var infowindow =new google.maps.InfoWindow({
+                    content:"<a href='"+url+ "'target='_blank'>for more info</a"+">",
+                    maxWidth:200});
+
+                google.maps.event.addListener(marker2,'click',function(){
+                    infowindow.open(map,marker2);
+                });
+
+            }
+
+            /**
+             *  this function will add marker to the map with the data from Foursquare
+             * @param location {google.maps.LatLng}
+             * @param venueName {string} the venue name
+             */
+            function placeMarkerVenueList(location,venueName) {
+                // this will remove all the previous markers from the previous request
+                if(clearMap==true)
+                {
+                    clearMap=false;
+                    setAllMap(null);
+                }
+                var marker2 = new google.maps.Marker({
+                    position: location,
+                    map: map,
+                    title:venueName
+                });
+                markers.push(marker2);
+                var infowindow =new google.maps.InfoWindow({
+                    content:venueName,
+                    maxWidth:200});
+
+                google.maps.event.addListener(marker2,'click',function(){
+                    infowindow.open(map,marker2);
+                });
+
+            }
+
+            function setAllMap(map) {
+                for (var i = 0; i < markers.length; i++) {
+                    markers[i].setMap(map);
+                }
+            }
+	
+	        google.maps.event.addDomListener(window, 'load', initialize);
+	    </script>
+
+
+
+</head>
+<body>
+<!--The main form-->
+<h1>Social Web</h1>
+	<form id="myform">
+		&nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp Keywords: <input type="text"
+			name="twitKey" value="" title="the keyword search"><br>
+		<br> &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp Location: <input
+			type="text" name="twitLoc" value="" id="twitLoc" title="the current location inter it by clicking in the map"><br>
+		<br> &nbsp &nbsp &nbsp Location name: <input type="text"
+			name="LocName" value="" id="LocName" title="add the location name to search for the people to checkIn in this location"><br>
+		<br> &nbsp &nbsp &nbsp&nbsp Screen names: <input type="text"
+			name="screenNames" value="" id="screenNames" title="add one screen name to search for his latest checkIn places or add more than one to search for discussion "><br>
+		<br> Keywords Number: <input type="text" name="keyNo" value=""
+			id="keyNo" title="add the number of key words the defult will be 1"><br>
+		<br> &nbsp &nbsp &nbsp &nbsp Days Number: <input type="text"
+			name="dayNo" value="" id="dayNo" title="add the number of days the defult will be 1 , if add 0 the streaming API will be used"><br>
+        <input style="display:none;" name="lat1" value="" id="lat1" title="this hidden to get the lat value"><br><br>
+
+        <input style="display:none;" name="long1" value="" id="long1" title="this hidden to get the long value"><br><br>
+        <br> &nbsp &nbsp &nbsp &nbsp
+		<button id="sendButton">Search</button>
+	</form>
+<!--place holder fo the data that will be received from the server -->
+<div id="map_canvas"></div>
+	<div id="output">
+		<p id="discussion"></p>
+		<p id="venueUsers"></p>
+		<p id="venueCheckInByUsers"></p>
+        <p id="panoramia"></p>
+        <p id="googlePlacesNames"></p>
+		<p id="UserLocationCheckIn"></p>
+		<p id="freq"></p>
+
+	</div>
+
+<!--The search form-->
+
+	<h1>Search the database</h1>
+	<form id="dbForm">
+		&nbsp &nbsp User Name: <input type="text" name="userName" value="" title="the user screen name, to get the user details form database"><br>
+		<br> &nbsp &nbsp &nbsp &nbsp &nbsp User Id: <input type="text"
+			name="userID" value="" title="the twitter userID"><br>
+		<br> Venue Name: <input type="text" name="venueNames" value="" title="venue name , to get the list of users who checkIn in this venue from database"><br>
+		<br>
+		<button id="searchDB_btn">Search</button>
+	</form>
+	<p id="userInfo"></p>
+    <p id="venueUserL"></p>
+	<script>
+        //to send an Ajax Query to the server
+	    function sendAjaxQuery(url, data) {
+	    
+	        $.ajax({
+	            type: 'POST',
+	            url: url,
+	            data: data,
+	            success: function (data) {
+	            refreshResults(data);
+	            },
+	            error: function (xhr, status, error) {
+	                console.log('Error: ' + error.message);
+	            }
+	
+	
+	        });
+	
+	    }
+	
+	    $.fn.serializeObject = function () {
+	        var o = {};
+	        var a = this.serializeArray();
+	        $.each(a, function () {
+	            if (o[this.name] !== undefined) {
+	                if (!o[this.name].push) {
+	                    o[this.name] = [o[this.name]];
+	                }
+	                o[this.name].push(this.value || '');
+	            } else {
+	                o[this.name] = this.value || '';
+	            }
+	        });
+	        return o;
+	    };
+	
+	    function sendData(formId,sendTo) {
+
+	        sendAjaxQuery('http://localhost:3000/'+sendTo,JSON.stringify($('#'+formId).serializeObject()));
+	}
+	// remove the previous results
+	$('#sendButton').on('click', function(e){
+	    $('#discussion').empty();
+	    $('#venueUsers').empty();
+        $('#panoramia').empty();
+        $('#googlePlacesNames').empty();
+	    $('#venueCheckInByUsers').empty();
+	    $('#freq').empty();
+	    $('#UserLocationCheckIn').empty();
+        $('#userInfo').empty();
+        $('#venueUserL').empty();
+	    var fid = $('#FID').val();
+	    var screennames = $('#screenNames').val();
+	    var twitKey = $('#twitKey').val();
+	    var twitLoc = $('#twitLoc').val();
+	    var keyNo = $('#keyNo').val();
+	    var dayNo = $('#dayNo').val();
+	    var re=/[A-Za-z0-9_]*/;
+        clearMap=true;
+	    var formId="myform";
+	    var sendTo="results.html";
+	    e.preventDefault();
+	    sendData(formId,sendTo);
+	 
+	});
+
+    // remove the previous results
+	$('#searchDB_btn').on('click', function(e){
+	    $('#userInfo').empty();
+        $('#venueUserL').empty();
+        $('#discussion').empty();
+        $('#venueUsers').empty();
+        $('#panoramia').empty();
+        $('#googlePlacesNames').empty();
+        $('#venueCheckInByUsers').empty();
+        $('#freq').empty();
+        $('#UserLocationCheckIn').empty();
+
+	    var formId="dbForm";
+	    var sendTo="searchDB";
+	    
+	    e.preventDefault();
+	    sendData(formId,sendTo);
+	 
+	});
+	
+	</script>
+	<script type="text/javascript" id="refreshResults">
+        // the main function to display the results from server
+	function refreshResults(data)
+	{
+	    var json=data;
+	   var venueUsers=$('#venueUsers');
+        var panoramia=$('#panoramia');
+        var googlePlacesNames=$('#googlePlacesNames');
+
+      //if the call is list the users who checkIn in specific  location
+      if(json.venueUsers)
+	  {
+          var venueUsers=$('#venueUsers');
+          venueUsers.append('<h2><p>list of users who checkIn in around this area</p></h2>');
+          var jsonVenueUsers=json.venueUsers;
+
+          var ul="<ul>";
+            venueUsers.append(ul);
+
+            $(jsonVenueUsers).each(function(index, item) {
+
+                ul+='<p>================================</p>';
+                // create the RDFa with the user information
+                ul+='<div vocab="http://xmlns.com/foaf/0.1/" typeof="Person"><p>';
+                ul+='<p>';
+                ul+='<h1><span property="name">'+item['userFullName']+'</span>,</h1>';
+                ul+='Twitter screen_name: <a property="OnlineAccount" >'+item['userScreenName']+'</a>,';
+                ul+='<a property=" Image " href='+item['profilPic']+' target=_blank>Profile Pic</a>,';
+                ul+='</p>';
+                ul+=' </div>';
+
+                //create the RDFa with the venue information
+                ul+='<div vocab="http://schema.org/" typeof="Place">';
+                ul+='<h2><span property="name">'+ item["venueName"] + '</span></h2>';
+                ul+='<p>';
+                ul+=' <span property="description">'+item['venueDescription']+'</span><br>';
+                ul+='<span property="description">'+item['venueCat'] +'</span>';
+                ul+='<p>';
+                ul+='Address: <div property="address"  typeof="PostalAddress">';
+                ul+=' <span property="streetAddress">'+item['address']+'</span> </div>';
+                ul+='<a property="url" href="'+item['url']+'"target=_blank>venue details URL</a><br>';
+                ul+='Phone: <span property="telephone">'+item['telephone']+'</span>';
+                ul+='<p>';
+                ul+='<a property="url" href="'+item['venuePic']+'" target=_blank>Venue photo</a>';
+                ul+='</div>';
+                // the link to get the surrounding information from foursquare
+                ul+="<a class='foursquareLink' href=\"venuesurroundings?vLat="+item["venueLat"]+"&vLong="+item["venueLong"] +"\" target=\"_blank\">info about surroundings (foursquare)</a>";
+                ul+="<p"+">";
+                // the link to get the surrounding information from dbpedia
+                ul+="<a class='dbpedialink' href=\"venuesurroundingsdbPedia?id="+item["venueName"] +"\" target=\"_blank\">info about surroundings (dbPedia)</a>";
+                ul+="<p"+">";
+                // the link to get the latest tweets for the user from the database and online
+                ul+="<a class='tweetsLink' href=\"userTweets?id="+item["userID"] +"\" target=\"_blank\">The recent user tweets</a>";
+
+                // add a map marker for the venue
+                placeMarkerVenueList(new google.maps.LatLng(item["venueLat"],item["venueLong"]),item["venueName"]);
+
+
+            });
+            venueUsers.append(ul);
+          //receive the data from dbpedia
+          $('.dbpedialink').click(function(e){
+              e.preventDefault();
+              clearMap=true;
+              var alink = $(this);
+              $.get(alink.prop('href'), function(data){
+                    //IF there is No data found in dbPedia
+                  if(data=='No result found in dbPedia')
+                  {
+                      alert(data);
+                  }
+                  data.forEach(function(venue)
+                  {
+                      var url = venue['uri'].substr(venue['uri'].lastIndexOf('/') + 1);
+                      var wikiURL='http://en.wikipedia.org/wiki/'+url;
+                      // add marker with venue information
+                      placeMarkerFoursquareAndBdPedia(new google.maps.LatLng(venue["lat"],venue["long"]),wikiURL,venue['venueName']);
+                  });
+              });
+          });
+          //receive the data from Foursquare
+          $('.foursquareLink').click(function(e){
+              e.preventDefault();
+              clearMap=true;
+
+              var flink = $(this);
+              $.get(flink.prop('href'), function(data){
+
+                  data.forEach(function(location)
+                  {
+                      // add marker with venue information
+                      placeMarkerFoursquareAndBdPedia(new google.maps.LatLng(location["data"].location.lat,location["data"].location.lng)
+                              ,location["urlLink"],location["data"].name);
+                  });
+
+
+              });
+          });
+	  }
+
+        // add list of pictures taken in this place from panoramia API service
+        if(json.panoramia)
+        {
+            panoramia.append('<h1><p>list of Pictures took around this area using Panoramia service </p></h1>');
+            var ul = $('<ul>');
+            panoramia.append(ul);
+            $(json.panoramia).each(function(index, item) {
+             ul.append(
+             $(document.createElement('li')).html(item)
+             );
+             });
+             panoramia.append('</ul>');
+
+        }
+
+        // add list of places around the current place from google api
+        if(json.googlePlacesNames)
+        {
+
+            googlePlacesNames.append('<h1><p>list of Places names and types from Google Places service </p></h1>');
+
+            var ul = $('<ul>');
+            googlePlacesNames.append(ul);
+
+            $(json.googlePlacesNames).each(function(index, item) {
+                ul.append(
+                        $(document.createElement('li')).html(item)
+                );
+            });
+            googlePlacesNames.append('</ul>');
+
+
+        }
+
+
+        // if the request in get the list of venues visited by a user
+        if(json.venueCheckInByUsers)
+        {
+
+            var venueCheckInByUsers=$('#venueCheckInByUsers');
+            var userCheckIn=json.venueCheckInByUsers;
+            var ul="<ul>";
+            ul+='<div vocab="http://xmlns.com/foaf/0.1/" typeof="Person"><p>';
+            ul+='<p>';
+            ul+='<h1><span property="name">'+json.venueCheckInByUsers[0]['userFullName']+'</span>,</h1>';
+            ul+='Twitter screen_name: <a property="OnlineAccount" >'+json.venueCheckInByUsers[0]['userScreenName']+'</a>,';
+            ul+='<a property=" Image " href='+json.venueCheckInByUsers[0]['profilPic']+' target=_blank>Profile Pic</a>,';
+            ul+='</p>';
+            ul+=' </div>';
+            venueCheckInByUsers.append('<h2><p>list of venues visited by this user </p></h2>');
+            ul+='==============================================================================';
+            $(userCheckIn).each(function(index, item) {
+                //create the RDFa with the venue information
+                ul+='<div vocab="http://schema.org/" typeof="Place">';
+                ul+='<h1><span property="name">'+ item["venueName"] + '</span></h1>';
+
+                ul+='<p>';
+                ul+=' <span property="description">'+item['venueDescription']+'</span><br>';
+                ul+='<span property="description">'+item['venueCat'] +'</span>';
+                ul+='<p>';
+                ul+='Address: <div property="address"  typeof="PostalAddress">';
+                ul+=' <span property="streetAddress">'+item['address']+'</span> </div>';
+                ul+='<a property="url" href="'+item['url']+'"target=_blank>venue details URL</a><br>';
+                ul+='Phone: <span property="telephone">'+item['telephone']+'</span>';
+                ul+='<p>';
+                ul+='<a property="url" href="'+item['venuePic']+'" target=_blank>Venue photo</a>';
+                ul+='</div>';
+                // the link to get the surrounding information from foursquare
+                ul+="<a class='foursquareLink' href=\"venuesurroundings?vLat="+item["venueLat"]+"&vLong="+item["venueLong"] +"\" target=\"_blank\">info about surroundings (foursquare)</a>";
+                ul+="<p"+">";
+                // the link to get the surrounding information from dbpedia
+                ul+="<a class='dbpedialink' href=\"venuesurroundingsdbPedia?id="+item["venueName"] +"\" target=\"_blank\">info about surroundings (dbPedia)</a>";
+                ul+="<p"+">";
+                // the link to get the latest tweets for the user from the database and online
+                ul+="<a class='tweetsLink' href=\"userTweets?id="+item["userID"] +"\" target=\"_blank\">The recent user tweets</a>";
+                // add a map marker for the venue
+                placeMarkerVenueList(new google.maps.LatLng(item["venueLat"],item["venueLong"]),item["venueName"]);
+
+
+            });
+            venueCheckInByUsers.append(ul);
+            //receive the data from dbpedia
+            $('.dbpedialink').click(function(e){
+                e.preventDefault();
+                clearMap=true;
+                var alink = $(this);
+                $.get(alink.prop('href'), function(data){
+                    //IF there is No data found in dbPedia
+                    if(data=='No result found in dbPedia')
+                    {
+                        alert(data);
+                    }
+                    data.forEach(function(venue)
+                    {
+                        var url = venue['uri'].substr(venue['uri'].lastIndexOf('/') + 1);
+                        var wikiURL='http://en.wikipedia.org/wiki/'+url;
+                        // add marker with venue information
+                        placeMarkerFoursquareAndBdPedia(new google.maps.LatLng(venue["lat"],venue["long"]),wikiURL,venue['venueName']);
+                    });
+                });
+            });
+            //receive the data from Foursquare
+            $('.foursquareLink').click(function(e){
+                e.preventDefault();
+                clearMap=true;
+
+                var flink = $(this);
+                $.get(flink.prop('href'), function(data){
+
+                    data.forEach(function(location)
+                    {
+                        // add marker with venue information
+                        placeMarkerFoursquareAndBdPedia(new google.maps.LatLng(location["data"].location.lat,location["data"].location.lng)
+                                ,location["urlLink"],location["data"].name);
+                    });
+
+
+                });
+            });
+        }
+
+        // if the request is list the users who visit a venue with its name
+        if(json.UserLocationCheckIn)
+        {
+            var UserLocationCheckIn=$('#UserLocationCheckIn');
+            UserLocationCheckIn.append('<h2><p>list of user how check in around this place </p></h2>');
+            var userLocations=json.UserLocationCheckIn;
+            var ul="<ul>";
+            $(userLocations).each(function(index, item) {
+
+                ul+='<p>================================</p>';
+                // create the RDFa with the user information
+                ul+='<div vocab="http://xmlns.com/foaf/0.1/" typeof="Person"><p>';
+                ul+='<p>';
+                ul+='<h1><span property="name">'+item['userFullName']+'</span>,</h1>';
+                ul+='Twitter screen_name: <a property="OnlineAccount" >'+item['userScreenName']+'</a>,';
+                ul+='<a property=" Image " href='+item['profilPic']+' target=_blank>Profile Pic</a>,';
+                ul+='</p>';
+                ul+=' </div>';
+
+                //create the RDFa with the venue information
+                ul+='<div vocab="http://schema.org/" typeof="Place">';
+                ul+='<h2><span property="name">'+ item["venueName"] + '</span></h2>';
+                ul+='<p>';
+                ul+=' <span property="description">'+item['venueDescription']+'</span><br>';
+                ul+='<span property="description">'+item['venueCat'] +'</span>';
+                ul+='<p>';
+                ul+='Address: <div property="address"  typeof="PostalAddress">';
+                ul+=' <span property="streetAddress">'+item['address']+'</span> </div>';
+                ul+='<a property="url" href="'+item['url']+'"target=_blank>venue details URL</a><br>';
+                ul+='Phone: <span property="telephone">'+item['telephone']+'</span>';
+                ul+='<p>';
+                ul+='<a property="url" href="'+item['venuePic']+'" target=_blank>Venue photo</a>';
+                ul+='</div>';
+                // the link to get the surrounding information from foursquare
+                ul+="<a class='foursquareLink' href=\"venuesurroundings?vLat="+item["venueLat"]+"&vLong="+item["venueLong"] +"\" target=\"_blank\">info about surroundings (foursquare)</a>";
+                ul+="<p"+">";
+                // the link to get the surrounding information from dbpedia
+                ul+="<a class='dbpedialink' href=\"venuesurroundingsdbPedia?id="+item["venueName"] +"\" target=\"_blank\">info about surroundings (dbPedia)</a>";
+                ul+="<p"+">";
+                // the link to get the latest tweets for the user from the database and online
+                ul+="<a class='tweetsLink' href=\"userTweets?id="+item["userID"] +"\" target=\"_blank\">The recent user tweets</a>";
+
+                // add a map marker for the venue
+                placeMarkerVenueList(new google.maps.LatLng(item["venueLat"],item["venueLong"]),item["venueName"]);
+
+
+            });
+            UserLocationCheckIn.append(ul);
+            //receive the data from dbpedia
+            $('.dbpedialink').click(function(e){
+                e.preventDefault();
+                clearMap=true;
+                var dblink = $(this);
+                $.get(dblink.prop('href'), function(data){
+                    //IF there is No data found in dbPedia
+                    if(data=='No result found in dbPedia')
+                    {
+                        alert(data);
+                    }
+                    data.forEach(function(venue)
+                    {
+                        var url = venue['uri'].substr(venue['uri'].lastIndexOf('/') + 1);
+                        var wikiURL='http://en.wikipedia.org/wiki/'+url;
+                        // add marker with venue information
+                        placeMarkerFoursquareAndBdPedia(new google.maps.LatLng(venue["lat"],venue["long"]),wikiURL,venue['venueName']);
+                    });
+                });
+            });
+            //receive the data from Foursquare
+            $('.foursquareLink').click(function(e){
+                e.preventDefault();
+                clearMap=true;
+
+                var flink = $(this);
+                $.get(flink.prop('href'), function(data){
+                    // add marker with venue information
+                    data.forEach(function(location)
+                    {
+
+                        placeMarkerFoursquareAndBdPedia(new google.maps.LatLng(location["data"].location.lat,location["data"].location.lng)
+                                ,location["urlLink"],location["data"].name);
+                    });
+
+
+                });
+            });
+        }
+
+
+        // the result from the discussion about specific topic
+        if(json.discussion)
+	    {
+            var discussion=$('#discussion');
+            discussion.append('<h2><p>discussion list</p></h2>');
+            var discusData=json.discussion;
+            var ul="<ul>";
+            $(discusData).each(function(index, item) {
+            ul+="<li>";
+            ul+=item["twit"];
+            ul+="<a href=\"retwit?id="+item["twitid"] +"\" target=\"_blank\">who retwit?</a>";
+            ul+="</li>";
+            });
+            ul+="</ul>";
+            discussion.append(ul);
+	    }
+	    // if the request is the discussion from more than one user and the common words
+	    if(json.freq)
+	    {
+          //handle freq
+          var freq=$("#freq");
+          freq.append('<h2><p>the most frequent words used:</p></h2>');
+          var freqData=json.freq;
+          var names=Object.keys(freqData.namenumberArray);
+          var sortedKeywords=freqData.sortedKeywords;
+          var freqTableWidth=names.length+2;
+          var freqTableHeight=sortedKeywords.length;
+          var namenumberArray=freqData.namenumberArray;
+          var totalArray=freqData.resgArray;
+          //create the result table
+          var table="<table>";
+            table+="<tr>";
+            table+="<th></th>";
+            for(var i=0;i<names.length;i++)
+            {
+            table+="<th>";
+            table+=names[i];
+            table+="</th>";
+            }
+            table+="<th>Total</th></tr>";
+            for(var i = 0; i <freqTableHeight; i++) {
+            table+="<tr>";
+            for(var j = 0; j < freqTableWidth; j++) {
+
+                if(j==0)
+                {
+                table+="<th>";
+                table+=sortedKeywords[i];
+                table+="</th>";
+                }
+                else if(j==freqTableWidth-1)
+                {
+                table+="<td>";
+                table+=totalArray[i];
+                table+="</td>";
+                }
+                else
+                {
+                table+="<td>";
+                var name=names[j-1];
+                var number=namenumberArray[name][i];
+                table+=number;
+                table+="</td>";
+                }
+            }
+            table+="</tr>";
+            }
+          table+="</table>";
+          freq.append(table);
+	}
+	// handling the database queries
+	var userInfo=$('#userInfo');
+    var venueUserL=$('#venueUserL');
+    // if there is an error in the search
+    if(json.dberr)
+    {
+        userInfo.append('<p style=color:red>database error</p>');
+    }
+    // if the query is about user .. get the user details
+	else if(json.userInfo)
+	{
+	    userInfo.append('<h2><p>userInfo:</p></h2>');
+	    var userinfo=json.userInfo[0];
+	    var retwitLists=json.retwitWhoLists;
+	    var retwitByWhoLists=json.retwitByWhoLists;
+	    // if the user is not in the database
+	    if(!userinfo)
+	     {
+	        userInfo.append('<p>This user is not fount in DB</p>');
+	     }
+        // display the user details
+	     else
+	      {
+	        var twitterId=userinfo.twitterID;
+		    var location=userinfo.location;
+	        var profilePic=userinfo.profilePic;
+		    var uName=userinfo.uName;
+		    var uDescrip=userinfo.uDescrip;
+		
+		    userInfo.append('<p>User name:'+uName+"</p>");
+		    userInfo.append('<p>Twitter ID:'+twitterId+"</p>");
+		  
+		    userInfo.append('<p>Location:'+location+"</p>");
+		    userInfo.append('<p>profilePic:'+profilePic+"</p>");
+		    userInfo.append('<p>User description:'+uDescrip+"</p>");
+          // this user makes a retweet for this users
+		  if(retwitLists.length!=0)
+		  {
+		    userInfo.append('<p>Retwit these people:');
+		    retwitLists.forEach(function(uName)
+		    {
+				userInfo.append(uName+' ');
+            });
+		  userInfo.append('</p>');
+		  }
+		  else
+		  {
+			  userInfo.append('<p>Retwit nobody recently!</p>');
+		  }
+          // the list of users who retweet for this user
+		  if(retwitByWhoLists.length!=0)
+		 {
+              userInfo.append('<p>Retwit by these people:');
+              retwitByWhoLists.forEach(function(uName)
+              {
+                  userInfo.append(uName+' ');
+              });
+		  userInfo.append('</p>');
+		 }
+		  else
+          {
+			  userInfo.append('<p>Nobody reTweet this user recently!</p>');
+          }
+	  }
+	     
+	  }
+       // if the query it asking about a venue ... get the people who visit this venue
+      else if(json.venueUsersList)
+      {
+
+          venueUserL.append('<p>List of users who chickIn in this venue :</p>');
+          var venueUsersList=json.venueUsersList[0];
+          if(!venueUsersList)
+          {
+              venueUserL.append('<p>This venue is not fount in DB</p>');
+          }
+          else
+          {
+
+              var count =Object.keys(json.venueUsersList).length;
+              for(var i=0;i<count;i++)
+              {
+                  venueUserL.append('<p>'+json.venueUsersList[i]['uName']+'</p> ');
+              }
+
+          }
+
+      }
+	    
+	}
+	</script>
+
+</body>
+</html>
